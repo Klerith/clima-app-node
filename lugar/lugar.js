@@ -1,27 +1,36 @@
 const axios = require('axios');
 
 
-const getLugarLatLng = async(direccion) => {
+const getLugarLatLng = async( dir ) => {
 
-    let encodedUrl = encodeURI(direccion);
+    const encodedUlr = encodeURI( dir );
+    
+    const instance = axios.create({
+        baseURL: `https://devru-latitude-longitude-find-v1.p.rapidapi.com/latlon.php?location=${ encodedUlr }`,
+        headers: {'X-RapidAPI-Key': 'YrIv9XHJxmmshCBitpg1YTAnahQSp1KbdHhjsnSBU1hvMDMlzK'}
+      });
+    
+    const resp = await instance.get();
 
-    let resp = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json?address=${ encodedUrl }&key=AIzaSyDzbQ_553v-n8QNs2aafN9QaZbByTyM7gQ`)
-
-    if (resp.data.status === 'ZERO_RESULTS') {
-        throw new Error(`No hay resultados para la ciudad ${ direccion }`);
+    if (  resp.data.Results.length === 0 ) {
+        throw new Error(`No hay resultados para ${ dir }`);
     }
 
-    let location = resp.data.results[0];
-    let coors = location.geometry.location;
+    const data      = resp.data.Results[0];
+    const direccion = data.name; 
+    const lat = data.lat; 
+    const lng = data.lon; 
+
 
     return {
-        direccion: location.formatted_address,
-        lat: coors.lat,
-        lng: coors.lng
+        direccion,
+        lat,
+        lng
     }
-
 }
+
 
 module.exports = {
     getLugarLatLng
 }
+
